@@ -8,9 +8,15 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import { AddFilled as iconAddSolid } from '@carbon/icons-react';
-import Button from '../Button';
+import Button, { type ButtonProps } from '../Button';
 
-const TableBatchAction = (props) => <Button {...props} />;
+const TableBatchAction = <T extends React.ElementType>({
+  iconDescription = 'Add',
+  renderIcon = iconAddSolid,
+  ...rest
+}: ButtonProps<T>) => (
+  <Button iconDescription={iconDescription} renderIcon={renderIcon} {...rest} />
+);
 
 TableBatchAction.propTypes = {
   /**

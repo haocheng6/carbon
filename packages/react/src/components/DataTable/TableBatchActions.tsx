@@ -7,35 +7,89 @@
 
 import cx from 'classnames';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { type MouseEventHandler } from 'react';
 import Button from '../Button';
 import TableActionList from './TableActionList';
 import { Text } from '../Text';
 import { usePrefix } from '../../internal/usePrefix';
+import type { InternationalProps } from '../../types/common';
 
-const translationKeys = {
+const TableBatchActionsTranslationKeys = [
+  'carbon.table.batch.cancel',
+  'carbon.table.batch.items.selected',
+  'carbon.table.batch.item.selected',
+] as const;
+
+export type TableBatchActionsTranslationKey =
+  (typeof TableBatchActionsTranslationKeys)[number];
+
+export interface TableBatchActionsTranslationArgs {
+  totalSelected?: number;
+}
+
+export interface TableBatchActionsProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    InternationalProps<
+      TableBatchActionsTranslationKey,
+      TableBatchActionsTranslationArgs
+    > {
+  /**
+   * Provide elements to be rendered inside of the component.
+   */
+  children?: React.ReactNode;
+
+  /**
+   * Hook required to listen for when the user initiates a cancel request
+   * through this component.
+   */
+  onCancel: MouseEventHandler<HTMLButtonElement>;
+
+  /**
+   * Boolean specifier for whether or not the batch action bar should be
+   * displayed.
+   */
+  shouldShowBatchActions?: boolean;
+
+  /**
+   * Numeric representation of the total number of items selected in a table.
+   * This number is used to derive the selection message.
+   */
+  totalSelected: number;
+}
+
+export interface TableBatchActionsComponent
+  extends React.FC<TableBatchActionsProps> {
+  translationKeys: ReadonlyArray<TableBatchActionsTranslationKey>;
+}
+
+const translationKeys: Readonly<
+  Record<TableBatchActionsTranslationKey, string>
+> = {
   'carbon.table.batch.cancel': 'Cancel',
   'carbon.table.batch.items.selected': 'items selected',
   'carbon.table.batch.item.selected': 'item selected',
 };
 
-const translateWithId = (id, state) => {
+const translateWithId: TableBatchActionsProps['translateWithId'] = (
+  id,
+  { totalSelected } = { totalSelected: 0 }
+) => {
   if (id === 'carbon.table.batch.cancel') {
     return translationKeys[id];
   }
-  return `${state.totalSelected} ${translationKeys[id]}`;
+  return `${totalSelected} ${translationKeys[id]}`;
 };
 
-const TableBatchActions = ({
+const TableBatchActions: TableBatchActionsComponent = ({
   className,
   children,
   shouldShowBatchActions,
   totalSelected,
   onCancel,
-  translateWithId: t,
+  translateWithId: t = translateWithId,
   ...rest
 }) => {
-  const [isScrolling, setIsScrolling] = React.useState();
+  const [isScrolling, setIsScrolling] = React.useState(false);
   const prefix = usePrefix();
   const batchActionsClasses = cx(
     {
@@ -79,7 +133,7 @@ const TableBatchActions = ({
   );
 };
 
-TableBatchActions.translationKeys = Object.keys(translationKeys);
+TableBatchActions.translationKeys = TableBatchActionsTranslationKeys;
 
 TableBatchActions.propTypes = {
   children: PropTypes.node,
